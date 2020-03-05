@@ -49,7 +49,7 @@ alpha = 0.6 # 对抗性权重
 # checkpoint_path = 'NEZHA/model.ckpt-900000'
 # dict_path = 'NEZHA/vocab.txt'
 config_path = 'BERT_wwm/bert_config.json'
-checkpoint_path = 'BERT_wwm/bert_model.ckpt.data-00000-of-00001'
+checkpoint_path = 'BERT_wwm/bert_model.ckpt'
 dict_path = 'BERT_wwm/vocab.txt'
 
 
