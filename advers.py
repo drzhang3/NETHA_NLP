@@ -1,16 +1,8 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Mar  1 18:34:30 2020
-
-@author: kasy
-"""
-
 #! -*- coding:utf-8 -*-
-# 通过对抗训练增强模型的泛化性能
-# 比CLUE榜单公开的同数据集上的BERT base的成绩高2%
 # 数据集：IFLYTEK' 长文本分类 (https://github.com/CLUEbenchmark/CLUE)
 # 博客：https://kexue.fm/archives/7234
 
+import argparse
 import json
 import numpy as np
 from bert4keras.backend import set_gelu
@@ -27,18 +19,7 @@ import pandas as pd
 
 #set_gelu('tanh')  # 切换gelu版本
 
-
-epoch_num = 15
-prefix = 'Google'
-
-
-num_classes = 2
-maxlen = 128
-batch_size = 64
-lr = 1.5e-5
-
-alpha = 0.5 # 对抗性权重
-
+batch_size = 128
 # BERT base
 config_path = 'BERT_wwm/bert_config.json'
 checkpoint_path = 'BERT_wwm/bert_model.ckpt'
@@ -55,25 +36,7 @@ def load_data(filename):
     return D
 
 
-## 加载数据集
-#all_data = load_data('./data/train_20200228.csv')
-#random_order = range(len(all_data))
-#np.random.shuffle(list(random_order))
-##train_data = [all_data[j] for i, j in enumerate(random_order) if i % 6 != 1 and i%6!=2]
-##valid_data = [all_data[j] for i, j in enumerate(random_order) if i % 6 == 1]
-##test_data = [all_data[j] for i, j in enumerate(random_order) if i % 6 == 2]
-#
-#train_data = [all_data[j] for i, j in enumerate(random_order) if i % 5 != 1]
-#valid_data = [all_data[j] for i, j in enumerate(random_order) if i % 5 == 1]
-##test_data = [all_data[j] for i, j in enumerate(random_order) if i % 6 == 2]
-
-# 建立分词器
-
-#val_test_data = load_data('./data/dev_20200228.csv')
-
 tokenizer = Tokenizer(dict_path, do_lower_case=True)
-
-
 
 
 class data_generator(DataGenerator):
@@ -89,7 +52,7 @@ class data_generator(DataGenerator):
             #print(self.data[i])
             _,_, text1, text2, label = self.data[i]
 #             print(text1, text2, label)
-            token_ids, segment_ids = tokenizer.encode(text1, text2, max_length=maxlen)
+            token_ids, segment_ids = tokenizer.encode(text1, text2, max_length=args.maxlen)
             batch_token_ids.append(token_ids)
             batch_segment_ids.append(segment_ids)
             batch_labels.append([label])
@@ -101,50 +64,34 @@ class data_generator(DataGenerator):
                 batch_token_ids, batch_segment_ids, batch_labels = [], [], []
 
 
-## 转换数据集
-#train_generator = data_generator(train_data, batch_size)
-#valid_generator = data_generator(valid_data, batch_size)
-#val_test_generator = data_generator(val_test_data, batch_size)
+def make_model():
 
-## 加载预训练模型
-#bert = build_bert_model(
-#    config_path=config_path,
-#    checkpoint_path=checkpoint_path,
-#    return_keras_model=False,
-#)
+    bert = build_bert_model(
+        config_path=config_path,
+        checkpoint_path=checkpoint_path,
+        with_pool=True,
+        return_keras_model=False,
+    )
+                          
 
-bert = build_bert_model(
-    config_path=config_path,
-    checkpoint_path=checkpoint_path,
-    with_pool=True,
-    return_keras_model=False,
-)
-                
-###加载预训练模型:: 华为
-#bert = build_bert_model(
-#    config_path=config_path,
-#    checkpoint_path=checkpoint_path,
-#    model='nezha',
-#    with_pool=True,
-#    return_keras_model=False,
-#)                
+    output = Dropout(rate=0.01)(bert.model.output)
+    ## 加了adversarial 层后，可以考虑更稳定些
+    #output = Lambda(lambda x: x[:, 0])(bert.model.output)
 
-output = Dropout(rate=0.01)(bert.model.output)
-## 加了adversarial 层后，可以考虑更稳定些
-#output = Lambda(lambda x: x[:, 0])(bert.model.output)
+    output = Dense(units=2,
+                activation='softmax',
+                kernel_initializer=bert.initializer)(output)
 
-output = Dense(units=2,
-               activation='softmax',
-               kernel_initializer=bert.initializer)(output)
+    model = keras.models.Model(bert.model.input, output)
+    model.summary()
 
-model = keras.models.Model(bert.model.input, output)
-model.summary()
+    model.compile(
+        loss='sparse_categorical_crossentropy',
+        optimizer=Adam(args.lr),
+        metrics=['accuracy'],
+    )
+    return model
 
-model.compile(
-    loss='sparse_categorical_crossentropy',
-    optimizer=Adam(lr),
-    metrics=['accuracy'],
-)
 
 
 def adversarial_training(model, embedding_name, epsilon=1):
@@ -190,11 +137,6 @@ def adversarial_training(model, embedding_name, epsilon=1):
     model.train_function = train_function  # 覆盖原训练函数
 
 
-# 写好函数后，启用对抗训练只需要一行代码
-adversarial_training(model, 'Embedding-Token', alpha)
-
-
-
 def evaluate(data):
     total, right = 0., 0.
     for x_true, y_true in data:
@@ -215,58 +157,84 @@ class Evaluator(keras.callbacks.Callback):
         if val_acc > self.best_val_acc:
             print('Model ckpt store!')
             self.best_val_acc = val_acc
-            model.save_weights('{0}_best_{1}_model.weights'.format(prefix, self.num))
+            model.save_weights('{0}_best_{1}_model.weights'.format(args.prefix, self.num))
         #test_acc = evaluate(valid_generator)
         test_acc = val_acc
         print(u'test_acc: %.5f, best_test_acc: %.5f, val_acc: %.5f\n'
               % (val_acc, self.best_val_acc, test_acc))
 
 
-#========================Init=============================
-print('****************Start init*******************')
-all_data = load_data('./data/small.csv')
-random_order = range(len(all_data))
-np.random.shuffle(list(random_order))
-        
-train_data = all_data
-valid_data = all_data
-test_data = all_data
-# 转换数据集
-train_generator = data_generator(train_data, batch_size)
-valid_generator = data_generator(valid_data, batch_size)
-test_generator = data_generator(test_data, batch_size)
-
-evaluator = Evaluator(num=0)
-model.fit_generator(train_generator.forfit(),
-                    steps_per_epoch=len(train_generator),
-                    epochs=2,
-                    callbacks=[evaluator])
-
-
-#================================First==================
-
-#print('**************First Model**********************')
-all_data = load_data('./data/train.csv')
-random_order = range(len(all_data))
-np.random.shuffle(list(random_order))
-
-for turn in range(1, 6):
-    print('*****************Turn {}**********************'.format(turn))
-    model.load_weights('{0}_best_0_model.weights'.format(prefix))
-    train_data = [all_data[j] for i, j in enumerate(random_order) if i % 5 != (turn-1)]
-    valid_data = [all_data[j] for i, j in enumerate(random_order) if i % 5 == (turn-1)]
-    test_data = valid_data
+def pre_train():
+    all_data = load_data('./data/small.csv')
+    random_order = range(len(all_data))
+    np.random.shuffle(list(random_order))
+            
+    train_data = all_data
+    valid_data = all_data
+    test_data = all_data
     # 转换数据集
     train_generator = data_generator(train_data, batch_size)
     valid_generator = data_generator(valid_data, batch_size)
     test_generator = data_generator(test_data, batch_size)
-    
-    evaluator = Evaluator(num=turn)
+
+    evaluator = Evaluator(num=0)
     model.fit_generator(train_generator.forfit(),
                         steps_per_epoch=len(train_generator),
-                        epochs=epoch_num,
+                        epochs=2,
                         callbacks=[evaluator])
-    model.load_weights('{0}_best_{1}_model.weights'.format(prefix, turn))
-    best_score = evaluate(test_generator)
-    with open('{}_record_acc.txt'.format(prefix), 'a+') as f:
-        f.write('Turn {0} Best acc {1:.4f}\n'.format(turn, best_score))
+
+
+def train(model):
+    all_data = load_data('./data/train.csv')
+    random_order = range(len(all_data))
+    np.random.shuffle(list(random_order))
+
+    for turn in range(1, 6):
+        print('*****************Turn {}**********************'.format(turn))
+        model.load_weights('{0}_best_0_model.weights'.format(args.prefix))
+        train_data = [all_data[j] for i, j in enumerate(random_order) if i % 5 != (turn-1)]
+        valid_data = [all_data[j] for i, j in enumerate(random_order) if i % 5 == (turn-1)]
+        test_data = valid_data
+        # 转换数据集
+        train_generator = data_generator(train_data, batch_size)
+        valid_generator = data_generator(valid_data, batch_size)
+        test_generator = data_generator(test_data, batch_size)
+        
+        evaluator = Evaluator(num=turn)
+        model.fit_generator(train_generator.forfit(),
+                            steps_per_epoch=len(train_generator),
+                            epochs=args.epochs,
+                            callbacks=[evaluator])
+        model.load_weights('{0}_best_{1}_model.weights'.format(args.prefix, turn))
+        best_score = evaluate(test_generator)
+        with open('{}_record_acc.txt'.format(args.prefix), 'a+') as f:
+            f.write('Turn {0} Best acc {1:.4f}\n'.format(turn, best_score))
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description='adver',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--prefix', type=str, default='Google')
+    parser.add_argument('--bs', type=int, default=64)
+    parser.add_argument('--lr', type=float, default=1e-3)
+    parser.add_argument('--epochs', type=int, default=15)
+    parser.add_argument('--maxlen', type=int, default=128)
+    parser.add_argument('--alpha', type=float, default=0.5)
+    
+    args = parser.parse_args()
+    print(args)
+
+    model = make_model()
+    # 写好函数后，启用对抗训练只需要一行代码
+    adversarial_training(model, 'Embedding-Token', args.alpha)
+
+    print('Pre_training')
+
+    pre_train(model)
+
+    print('Start Training...') 
+
+    train(model)
+
+    
