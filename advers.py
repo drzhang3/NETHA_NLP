@@ -19,8 +19,6 @@ import pandas as pd
 
 #set_gelu('tanh')  # 切换gelu版本
 
-
-
 ## HuaWei NeTha
 #config_path = 'NEZHA/bert_config.json'
 #checkpoint_path = 'NEZHA/model.ckpt-900000'
@@ -30,9 +28,6 @@ import pandas as pd
 def load_data(filename):
     D = pd.read_csv(filename).values.tolist()
     return D
-
-
-
 
 
 class data_generator(DataGenerator):
@@ -144,12 +139,13 @@ def evaluate(data):
 
 
 class Evaluator(keras.callbacks.Callback):
-    def __init__(self, best_val_acc=0., num=0):
+    def __init__(self, best_val_acc=0., num=0,test_generator):
         self.best_val_acc = best_val_acc
         self.num = int(num)
+        self.test_generator = test_generator
 
     def on_epoch_end(self, epoch, logs=None):
-        val_acc = evaluate(test_generator)
+        val_acc = evaluate(self.test_generator)
         if val_acc > self.best_val_acc:
             print('Model ckpt store!')
             self.best_val_acc = val_acc
@@ -173,7 +169,7 @@ def pre_train(model):
     valid_generator = data_generator(valid_data, batch_size)
     test_generator = data_generator(test_data, batch_size)
 
-    evaluator = Evaluator(num=0)
+    evaluator = Evaluator(num=0, test_generator)
     model.fit_generator(train_generator.forfit(),
                         steps_per_epoch=len(train_generator),
                         epochs=2,
@@ -196,7 +192,7 @@ def train(model):
         valid_generator = data_generator(valid_data, batch_size)
         test_generator = data_generator(test_data, batch_size)
         
-        evaluator = Evaluator(num=turn)
+        evaluator = Evaluator(num=turn, test_generator)
         model.fit_generator(train_generator.forfit(),
                             steps_per_epoch=len(train_generator),
                             epochs=args.epochs,
@@ -217,20 +213,18 @@ if __name__ == "__main__":
     parser.add_argument('--epochs', type=int, default=15)
     parser.add_argument('--maxlen', type=int, default=128)
     parser.add_argument('--alpha', type=float, default=0.5)
-    
     args = parser.parse_args()
     print(args)
 
-
     batch_size = args.bs
-    # BERT base
     config_path = 'BERT_wwm/bert_config.json'
     checkpoint_path = 'BERT_wwm/bert_model.ckpt'
     dict_path = 'BERT_wwm/vocab.txt'
 
+
     tokenizer = Tokenizer(dict_path, do_lower_case=True)
 
-    
+
     model = make_model()
     # 写好函数后，启用对抗训练只需要一行代码
     adversarial_training(model, 'Embedding-Token', args.alpha)
