@@ -39,9 +39,9 @@ lr = 1.5e-5
 alpha = 0.5 # 对抗性权重
 
 # BERT base
-config_path = 'publish/bert_config.json'
-checkpoint_path = 'publish/bert_model.ckpt'
-dict_path = 'publish/vocab.txt'
+    config_path = 'BERT_wwm/bert_config.json'
+    checkpoint_path = 'BERT_wwm/bert_model.ckpt'
+    dict_path = 'BERT_wwm/vocab.txt'
 
 ## HuaWei NeTha
 #config_path = 'NEZHA/bert_config.json'
