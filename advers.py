@@ -139,7 +139,7 @@ def evaluate(data):
 
 
 class Evaluator(keras.callbacks.Callback):
-    def __init__(self, best_val_acc=0., num=0,test_generator):
+    def __init__(self, test_generator, best_val_acc=0., num=0):
         self.best_val_acc = best_val_acc
         self.num = int(num)
         self.test_generator = test_generator
@@ -169,7 +169,7 @@ def pre_train(model):
     valid_generator = data_generator(valid_data, batch_size)
     test_generator = data_generator(test_data, batch_size)
 
-    evaluator = Evaluator(num=0, test_generator)
+    evaluator = Evaluator(test_generator, num=0)
     model.fit_generator(train_generator.forfit(),
                         steps_per_epoch=len(train_generator),
                         epochs=2,
@@ -192,7 +192,7 @@ def train(model):
         valid_generator = data_generator(valid_data, batch_size)
         test_generator = data_generator(test_data, batch_size)
         
-        evaluator = Evaluator(num=turn, test_generator)
+        evaluator = Evaluator(test_generator, num=turn)
         model.fit_generator(train_generator.forfit(),
                             steps_per_epoch=len(train_generator),
                             epochs=args.epochs,
