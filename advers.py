@@ -183,7 +183,7 @@ def train(model):
 
     for turn in range(1, 6):
         print('*****************Turn {}**********************'.format(turn))
-        model.load_weights('{0}_best_0_model.weights'.format(args.prefix))
+        # model.load_weights('{0}_best_0_model.weights'.format(args.prefix))
         train_data = [all_data[j] for i, j in enumerate(random_order) if i % 5 != (turn-1)]
         valid_data = [all_data[j] for i, j in enumerate(random_order) if i % 5 == (turn-1)]
         test_data = valid_data
@@ -229,9 +229,9 @@ if __name__ == "__main__":
     # 写好函数后，启用对抗训练只需要一行代码
     adversarial_training(model, 'Embedding-Token', args.alpha)
 
-    print('Pre_training')
+    # print('Pre_training')
 
-    pre_train(model)
+    # pre_train(model)
 
     print('Start Training...') 
 
