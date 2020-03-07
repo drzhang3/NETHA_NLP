@@ -74,7 +74,6 @@ tokenizer = Tokenizer(dict_path, do_lower_case=True)
 
 
 
-
 class data_generator(DataGenerator):
     """数据生成器
     """

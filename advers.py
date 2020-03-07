@@ -174,7 +174,7 @@ if __name__ == "__main__":
     dict_path = 'BERT_wwm/vocab.txt'
 
 
-    tokenizer = Tokenizer(dict_path, do_lower_case=True)
+   
 
 
     model = make_model()
