@@ -93,35 +93,43 @@ print('{0}_best_model.weights'.format(prefix))
 
 #===================load first model=============
 # HuaWei NeTha
-config_path = 'NEZHA/bert_config.json'
-checkpoint_path = 'NEZHA/model.ckpt-900000'
-dict_path = 'NEZHA/vocab.txt'          
+# config_path = 'BERT_wwm/bert_config.json'
+# checkpoint_path = 'BERT_wwm/bert_model.ckpt'
+# dict_path = 'BERT_wwm/vocab.txt'        
 
-tokenizer = Tokenizer(dict_path, do_lower_case=True)     
-##加载预训练模型:: 华为
-bert = build_bert_model(
-    config_path=config_path,
-    checkpoint_path=checkpoint_path,
-    model='nezha',
-    with_pool=True,
-    return_keras_model=False,
-)    
+# tokenizer = Tokenizer(dict_path, do_lower_case=True)     
+# ##加载预训练模型:: 华为
+# # bert = build_bert_model(
+# #     config_path=config_path,
+# #     checkpoint_path=checkpoint_path,
+# #     model='nezha',
+# #     with_pool=True,
+# #     return_keras_model=False,
+# # )  
+# #   
+# bert = build_bert_model(
+#     config_path=config_path,
+#     checkpoint_path=checkpoint_path,
+#     with_pool=True,
+#     return_keras_model=False,
+# )
+      
 
-output = Dropout(rate=0.1)(bert.model.output)
-output = Dense(units=2,
-               activation='softmax',
-               kernel_initializer=bert.initializer)(output)
+# output = Dropout(rate=0.1)(bert.model.output)
+# output = Dense(units=2,
+#                activation='softmax',
+#                kernel_initializer=bert.initializer)(output)
 
-model = keras.models.Model(bert.model.input, output)
-model.summary()
-#===================load first model=====================
-prefix = 'NEZHA'
-model.load_weights('{0}_best_1_model.weights'.format(prefix))
-idxs1, preds1 = eval_submission(test_generator)
+# model = keras.models.Model(bert.model.input, output)
+# model.summary()
+# #===================load first model=====================
+# prefix = 'NEZHA'
+# model.load_weights('{0}_best_1_model.weights'.format(prefix))
+# idxs1, preds1 = eval_submission(test_generator)
 
-print('Beging first')
-model.load_weights('{0}_best_2_model.weights'.format(prefix))
-idxs1, preds2 = eval_submission(test_generator)
+# print('Beging first')
+# model.load_weights('{0}_best_2_model.weights'.format(prefix))
+# idxs1, preds2 = eval_submission(test_generator)
 
 
 
@@ -170,7 +178,7 @@ model.load_weights('{0}_best_5_model.weights'.format(prefix))
 idxs1, preds7 = eval_submission(test_generator)
 
 
-preds = preds1 + preds2 + preds3 + preds4 + preds5 + preds6 + preds7
+preds = preds3 + preds4 + preds5 + preds6 + preds7
 preds_num = len(preds)
 
 preds_final = []
