@@ -19,11 +19,7 @@ import pandas as pd
 
 #set_gelu('tanh')  # 切换gelu版本
 
-batch_size = 128
-# BERT base
-config_path = 'BERT_wwm/bert_config.json'
-checkpoint_path = 'BERT_wwm/bert_model.ckpt'
-dict_path = 'BERT_wwm/vocab.txt'
+
 
 ## HuaWei NeTha
 #config_path = 'NEZHA/bert_config.json'
@@ -36,7 +32,7 @@ def load_data(filename):
     return D
 
 
-tokenizer = Tokenizer(dict_path, do_lower_case=True)
+
 
 
 class data_generator(DataGenerator):
@@ -164,7 +160,7 @@ class Evaluator(keras.callbacks.Callback):
               % (val_acc, self.best_val_acc, test_acc))
 
 
-def pre_train():
+def pre_train(model):
     all_data = load_data('./data/small.csv')
     random_order = range(len(all_data))
     np.random.shuffle(list(random_order))
@@ -225,6 +221,16 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print(args)
 
+
+    batch_size = args.bs
+    # BERT base
+    config_path = 'BERT_wwm/bert_config.json'
+    checkpoint_path = 'BERT_wwm/bert_model.ckpt'
+    dict_path = 'BERT_wwm/vocab.txt'
+
+    tokenizer = Tokenizer(dict_path, do_lower_case=True)
+
+    
     model = make_model()
     # 写好函数后，启用对抗训练只需要一行代码
     adversarial_training(model, 'Embedding-Token', args.alpha)
