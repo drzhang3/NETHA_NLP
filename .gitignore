@@ -1,1 +1,9 @@
 BERT_wwm/
+Google_best_0_model.weights
+Google_best_1_model.weights
+Google_best_2_model.weights
+Google_best_3_model.weights
+Google_best_4_model.weights
+Google_best_5_model.weights
+Google_record_acc.txt
+result.csv
