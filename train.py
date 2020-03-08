@@ -33,7 +33,7 @@ prefix = 'Google'
 
 num_classes = 2
 maxlen = 128
-batch_size = 64
+batch_size = 128
 lr = 1.5e-5
 
 alpha = 0.5 # 对抗性权重
