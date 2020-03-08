@@ -154,7 +154,7 @@ class Evaluator(keras.callbacks.Callback):
               % (val_acc, self.best_val_acc, test_acc))
 
 def train():
-    tall_data = load_data('./data/train.csv')
+    all_data = load_data('./data/train.csv')
     random_order = range(len(all_data))
     np.random.shuffle(list(random_order))
 
