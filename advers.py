@@ -172,7 +172,7 @@ if __name__ == "__main__":
     checkpoint_path = 'BERT_wwm/bert_model.ckpt'
 
     model = make_model(config_path, checkpoint_path)
-    model.compile
+    model.compile(
         loss='sparse_categorical_crossentropy',
         optimizer=Adam(args.lr),
         metrics=['accuracy'],
