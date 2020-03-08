@@ -59,7 +59,7 @@ class data_generator(DataGenerator):
                 batch_token_ids, batch_segment_ids, batch_labels = [], [], []
 
 
-def make_model():
+def make_model(config_path, checkpoint_path):
 
     bert = build_bert_model(
         config_path=config_path,
@@ -80,11 +80,6 @@ def make_model():
     model = keras.models.Model(bert.model.input, output)
     model.summary()
 
-    model.compile(
-        loss='sparse_categorical_crossentropy',
-        optimizer=Adam(args.lr),
-        metrics=['accuracy'],
-    )
     return model
 
 
@@ -176,7 +171,12 @@ if __name__ == "__main__":
     config_path = 'BERT_wwm/bert_config.json'
     checkpoint_path = 'BERT_wwm/bert_model.ckpt'
 
-    model = make_model()
+    model = make_model(config_path, checkpoint_path)
+    model.compile
+        loss='sparse_categorical_crossentropy',
+        optimizer=Adam(args.lr),
+        metrics=['accuracy'],
+    )
     # 写好函数后，启用对抗训练只需要一行代码
     adversarial_training(model, 'Embedding-Token', args.alpha)
 
