@@ -30,6 +30,10 @@ def load_data(filename):
     return D
 
 
+dict_path = 'BERT_wwm/vocab.txt'
+tokenizer = Tokenizer(dict_path, do_lower_case=True)
+
+
 class data_generator(DataGenerator):
     """数据生成器
     """
@@ -171,11 +175,6 @@ if __name__ == "__main__":
     batch_size = args.bs
     config_path = 'BERT_wwm/bert_config.json'
     checkpoint_path = 'BERT_wwm/bert_model.ckpt'
-    dict_path = 'BERT_wwm/vocab.txt'
-
-
-   
-
 
     model = make_model()
     # 写好函数后，启用对抗训练只需要一行代码
