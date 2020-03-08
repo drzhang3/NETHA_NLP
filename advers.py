@@ -153,33 +153,6 @@ class Evaluator(keras.callbacks.Callback):
         print(u'test_acc: %.5f, best_test_acc: %.5f, val_acc: %.5f\n'
               % (val_acc, self.best_val_acc, test_acc))
 
-def train():
-    all_data = load_data('./data/train.csv')
-    random_order = range(len(all_data))
-    np.random.shuffle(list(random_order))
-
-    for turn in range(1, 6):
-        print('*****************Turn {}**********************'.format(turn))
-        # model.load_weights('{0}_best_0_model.weights'.format(args.prefix))
-        train_data = [all_data[j] for i, j in enumerate(random_order) if i % 5 != (turn-1)]
-        valid_data = [all_data[j] for i, j in enumerate(random_order) if i % 5 == (turn-1)]
-        test_data = valid_data
-        # 转换数据集
-        train_generator = data_generator(train_data, batch_size)
-        valid_generator = data_generator(valid_data, batch_size)
-        test_generator = data_generator(test_data, batch_size)
-        
-        evaluator = Evaluator(num=turn)
-        model.fit_generator(train_generator.forfit(),
-                            steps_per_epoch=len(train_generator),
-                            epochs=args.epochs,
-                            callbacks=[evaluator])
-        model.load_weights('{0}_best_{1}_model.weights'.format(args.prefix, turn))
-        best_score = evaluate(test_generator)
-        with open('{}_record_acc.txt'.format(args.prefix), 'a+') as f:
-            f.write('Turn {0} Best acc {1:.4f}\n'.format(turn, best_score))
-
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -208,5 +181,29 @@ if __name__ == "__main__":
     adversarial_training(model, 'Embedding-Token', args.alpha)
 
     print('Start Training...') 
-    train()
+    all_data = load_data('./data/train.csv')
+    random_order = range(len(all_data))
+    np.random.shuffle(list(random_order))
+
+    for turn in range(1, 6):
+        print('*****************Turn {}**********************'.format(turn))
+        # model.load_weights('{0}_best_0_model.weights'.format(args.prefix))
+        train_data = [all_data[j] for i, j in enumerate(random_order) if i % 5 != (turn-1)]
+        valid_data = [all_data[j] for i, j in enumerate(random_order) if i % 5 == (turn-1)]
+        test_data = valid_data
+        # 转换数据集
+        train_generator = data_generator(train_data, batch_size)
+        valid_generator = data_generator(valid_data, batch_size)
+        test_generator = data_generator(test_data, batch_size)
+        
+        evaluator = Evaluator(num=turn)
+        model.fit_generator(train_generator.forfit(),
+                            steps_per_epoch=len(train_generator),
+                            epochs=args.epochs,
+                            callbacks=[evaluator])
+        model.load_weights('{0}_best_{1}_model.weights'.format(args.prefix, turn))
+        best_score = evaluate(test_generator)
+        with open('{}_record_acc.txt'.format(args.prefix), 'a+') as f:
+            f.write('Turn {0} Best acc {1:.4f}\n'.format(turn, best_score))
+
     
