@@ -186,7 +186,7 @@ if __name__ == "__main__":
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--prefix', type=str, default='Google')
     parser.add_argument('--bs', type=int, default=128)
-    parser.add_argument('--lr', type=float, default=3e-5)
+    parser.add_argument('--lr', type=float, default=2.5e-5)
     parser.add_argument('--epochs', type=int, default=15)
     parser.add_argument('--maxlen', type=int, default=128)
     parser.add_argument('--alpha', type=float, default=0.5)
