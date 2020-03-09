@@ -203,7 +203,7 @@ if __name__ == "__main__":
     
 
     print('Start Training...') 
-    all_data = load_data('./data/small.csv')[:100]
+    all_data = load_data('./data/train.csv')
     random_order = list(range(len(all_data)))
     # np.random.shuffle(random_order)
 
