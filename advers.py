@@ -60,28 +60,7 @@ class data_generator(DataGenerator):
                 batch_token_ids, batch_segment_ids, batch_labels = [], [], []
 
 
-def make_model(config_path, checkpoint_path):
 
-    bert = build_bert_model(
-        config_path=config_path,
-        checkpoint_path=checkpoint_path,
-        with_pool=True,
-        return_keras_model=False,
-    )
-                          
-
-    output = Dropout(rate=0.01)(bert.model.output)
-    ## 加了adversarial 层后，可以考虑更稳定些
-    #output = Lambda(lambda x: x[:, 0])(bert.model.output)
-
-    output = Dense(units=2,
-                activation='softmax',
-                kernel_initializer=bert.initializer)(output)
-
-    model = keras.models.Model(bert.model.input, output)
-    model.summary()
-
-    return model
 
 
 
@@ -126,6 +105,38 @@ def adversarial_training(model, embedding_name, epsilon=1):
         return outputs
 
     model.train_function = train_function  # 覆盖原训练函数
+
+
+def make_model(config_path, checkpoint_path):
+
+    bert = build_bert_model(
+        config_path=config_path,
+        checkpoint_path=checkpoint_path,
+        with_pool=True,
+        return_keras_model=False,
+    )
+                          
+
+    output = Dropout(rate=0.01)(bert.model.output)
+    ## 加了adversarial 层后，可以考虑更稳定些
+    #output = Lambda(lambda x: x[:, 0])(bert.model.output)
+
+    output = Dense(units=2,
+                activation='softmax',
+                kernel_initializer=bert.initializer)(output)
+
+    model = keras.models.Model(bert.model.input, output)
+    # model.summary()
+    
+    model.compile(
+        loss='sparse_categorical_crossentropy',
+        optimizer=Adam(args.lr),
+        metrics=['accuracy'],
+    )
+    # 写好函数后，启用对抗训练只需要一行代码
+    adversarial_training(model, 'Embedding-Token', args.alpha)
+
+    return model
 
 
 def evaluate(data):
@@ -188,17 +199,11 @@ if __name__ == "__main__":
     config_path = 'BERT_wwm/bert_config.json'
     checkpoint_path = 'BERT_wwm/bert_model.ckpt'
 
-    model = make_model(config_path, checkpoint_path)
-    model.compile(
-        loss='sparse_categorical_crossentropy',
-        optimizer=Adam(args.lr),
-        metrics=['accuracy'],
-    )
-    # 写好函数后，启用对抗训练只需要一行代码
-    adversarial_training(model, 'Embedding-Token', args.alpha)
+    # model = make_model(config_path, checkpoint_path)
+    
 
     print('Start Training...') 
-    all_data = load_data('./data/small.csv')
+    all_data = load_data('./data/small.csv')[:100]
     random_order = list(range(len(all_data)))
     # np.random.shuffle(random_order)
 
@@ -208,6 +213,7 @@ if __name__ == "__main__":
         train_data = [all_data[i] for i in train_index]
         test_data= [all_data[j] for j in test_index]
         print('*****************Turn {}**********************'.format(turn))
+        model = make_model(config_path, checkpoint_path)
         train(model, train_data, test_data, args.bs, turn)
 
     
