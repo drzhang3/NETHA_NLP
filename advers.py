@@ -61,9 +61,6 @@ class data_generator(DataGenerator):
 
 
 
-
-
-
 def adversarial_training(model, embedding_name, epsilon=1):
     """给模型添加对抗训练
     其中model是需要添加对抗训练的keras模型，embedding_name
@@ -188,16 +185,17 @@ if __name__ == "__main__":
         description='adver',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--prefix', type=str, default='Google')
-    parser.add_argument('--bs', type=int, default=64)
-    parser.add_argument('--lr', type=float, default=1e-5)
+    parser.add_argument('--bs', type=int, default=128)
+    parser.add_argument('--lr', type=float, default=3e-5)
     parser.add_argument('--epochs', type=int, default=15)
     parser.add_argument('--maxlen', type=int, default=128)
     parser.add_argument('--alpha', type=float, default=0.5)
+    parser.add_argument('--base', type=str, default='BERT_wwm')
     args = parser.parse_args()
     print(args)
 
-    config_path = 'BERT_wwm/bert_config.json'
-    checkpoint_path = 'BERT_wwm/bert_model.ckpt'
+    config_path = args.base+'/bert_config.json'
+    checkpoint_path = args.base+'/bert_model.ckpt'
 
     # model = make_model(config_path, checkpoint_path)
     
@@ -215,28 +213,4 @@ if __name__ == "__main__":
         print('*****************Turn {}**********************'.format(turn))
         model = make_model(config_path, checkpoint_path)
         train(model, train_data, test_data, args.bs, turn)
-
-    
-
-    # for turn in range(1, 6):
-    #     print('*****************Turn {}**********************'.format(turn))
-    #     # model.load_weights('{0}_best_0_model.weights'.format(args.prefix))
-    #     train_data = [all_data[j] for i, j in enumerate(random_order) if i % 5 != (turn-1)]
-    #     valid_data = [all_data[j] for i, j in enumerate(random_order) if i % 5 == (turn-1)]
-    #     test_data = valid_data
-    #     # 转换数据集
-    #     train_generator = data_generator(train_data, batch_size)
-    #     valid_generator = data_generator(valid_data, batch_size)
-    #     test_generator = data_generator(test_data, batch_size)
-        
-    #     evaluator = Evaluator(generator=test_generator, prefix=args.prefix. num=turn)
-    #     model.fit_generator(train_generator.forfit(),
-    #                         steps_per_epoch=len(train_generator),
-    #                         epochs=args.epochs,
-    #                         callbacks=[evaluator])
-    #     model.load_weights('{0}_best_{1}_model.weights'.format(args.prefix, turn))
-    #     best_score = evaluate(test_generator)
-    #     with open('{}_record_acc.txt'.format(args.prefix), 'a+') as f:
-    #         f.write('Turn {0} Best acc {1:.4f}\n'.format(turn, best_score))
-
-    
+        turn = turn + 1
