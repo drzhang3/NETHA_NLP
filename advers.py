@@ -5,6 +5,7 @@
 import argparse
 import json
 import numpy as np
+from sklearn.model_selection import KFold
 from bert4keras.backend import set_gelu
 from bert4keras.backend import keras, search_layer, K
 from bert4keras.tokenizer import Tokenizer
@@ -38,7 +39,7 @@ class data_generator(DataGenerator):
     """数据生成器
     """
 
-    def __iter__(self, random=False):
+    def __iter__(self, random=True):
         idxs = list(range(len(self.data)))
         if random:
             np.random.shuffle(idxs)
@@ -138,12 +139,14 @@ def evaluate(data):
 
 
 class Evaluator(keras.callbacks.Callback):
-    def __init__(self, best_val_acc=0., num=0):
+    def __init__(self, generator, prefix, best_val_acc=0., num=0):
         self.best_val_acc = best_val_acc
         self.num = int(num)
+        self.generator = generator
+        self.prefix = prefix
 
     def on_epoch_end(self, epoch, logs=None):
-        val_acc = evaluate(test_generator)
+        val_acc = evaluate(self.generator)
         if val_acc > self.best_val_acc:
             print('Model ckpt store!')
             self.best_val_acc = val_acc
@@ -152,6 +155,21 @@ class Evaluator(keras.callbacks.Callback):
         test_acc = val_acc
         print(u'test_acc: %.5f, best_test_acc: %.5f, val_acc: %.5f\n'
               % (val_acc, self.best_val_acc, test_acc))
+
+
+def train(model, train_data, valid_data, batch_size, turn):
+    train_generator = data_generator(train_data, batch_size)
+    valid_generator = data_generator(valid_data, batch_size)
+
+    evaluator = Evaluator(generator=valid_generator, prefix=args.prefix, num=turn)
+    model.fit_generator(train_generator.forfit(),
+                        steps_per_epoch=len(train_generator),
+                        epochs=args.epochs,
+                        callbacks=[evaluator])
+    model.load_weights('{0}_best_{1}_model.weights'.format(args.prefix, turn))
+    best_score = evaluate(valid_generator)
+    with open('{}_record_acc.txt'.format(args.prefix), 'a+') as f:
+        f.write('Turn {0} Best acc {1:.4f}\n'.format(turn, best_score))
 
 
 if __name__ == "__main__":
@@ -167,7 +185,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print(args)
 
-    batch_size = args.bs
     config_path = 'BERT_wwm/bert_config.json'
     checkpoint_path = 'BERT_wwm/bert_model.ckpt'
 
@@ -181,29 +198,39 @@ if __name__ == "__main__":
     adversarial_training(model, 'Embedding-Token', args.alpha)
 
     print('Start Training...') 
-    all_data = load_data('./data/train.csv')
-    random_order = range(len(all_data))
-    np.random.shuffle(list(random_order))
+    all_data = load_data('./data/small.csv')
+    random_order = list(range(len(all_data)))
+    # np.random.shuffle(random_order)
 
-    for turn in range(1, 6):
+    kf = KFold(n_splits=5, shuffle=True)
+    turn = 1
+    for train_index, test_index in kf.split(random_order):
+        train_data = [all_data[i] for i in train_index]
+        test_data= [all_data[j] for j in test_index]
         print('*****************Turn {}**********************'.format(turn))
-        # model.load_weights('{0}_best_0_model.weights'.format(args.prefix))
-        train_data = [all_data[j] for i, j in enumerate(random_order) if i % 5 != (turn-1)]
-        valid_data = [all_data[j] for i, j in enumerate(random_order) if i % 5 == (turn-1)]
-        test_data = valid_data
-        # 转换数据集
-        train_generator = data_generator(train_data, batch_size)
-        valid_generator = data_generator(valid_data, batch_size)
-        test_generator = data_generator(test_data, batch_size)
+        train(model, train_data, test_data, args.bs, turn)
+
+    
+
+    # for turn in range(1, 6):
+    #     print('*****************Turn {}**********************'.format(turn))
+    #     # model.load_weights('{0}_best_0_model.weights'.format(args.prefix))
+    #     train_data = [all_data[j] for i, j in enumerate(random_order) if i % 5 != (turn-1)]
+    #     valid_data = [all_data[j] for i, j in enumerate(random_order) if i % 5 == (turn-1)]
+    #     test_data = valid_data
+    #     # 转换数据集
+    #     train_generator = data_generator(train_data, batch_size)
+    #     valid_generator = data_generator(valid_data, batch_size)
+    #     test_generator = data_generator(test_data, batch_size)
         
-        evaluator = Evaluator(num=turn)
-        model.fit_generator(train_generator.forfit(),
-                            steps_per_epoch=len(train_generator),
-                            epochs=args.epochs,
-                            callbacks=[evaluator])
-        model.load_weights('{0}_best_{1}_model.weights'.format(args.prefix, turn))
-        best_score = evaluate(test_generator)
-        with open('{}_record_acc.txt'.format(args.prefix), 'a+') as f:
-            f.write('Turn {0} Best acc {1:.4f}\n'.format(turn, best_score))
+    #     evaluator = Evaluator(generator=test_generator, prefix=args.prefix. num=turn)
+    #     model.fit_generator(train_generator.forfit(),
+    #                         steps_per_epoch=len(train_generator),
+    #                         epochs=args.epochs,
+    #                         callbacks=[evaluator])
+    #     model.load_weights('{0}_best_{1}_model.weights'.format(args.prefix, turn))
+    #     best_score = evaluate(test_generator)
+    #     with open('{}_record_acc.txt'.format(args.prefix), 'a+') as f:
+    #         f.write('Turn {0} Best acc {1:.4f}\n'.format(turn, best_score))
 
     
