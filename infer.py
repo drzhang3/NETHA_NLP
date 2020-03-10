@@ -109,9 +109,8 @@ if __name__ == "__main__":
     test_data = load_data('/tcdata/test.csv')
 
     test_generator = test_data_generator(test_data, 1)
-    print('{0}_best_model.weights'.format(prefix))
+    print('{0}_best_model.weights'.format(args.prefix))
 
-    prefix = args.prefix
 
     config_path = args.prefix + '/bert_config.json'
     checkpoint_path = args.prefix + '/bert_model.ckpt'
