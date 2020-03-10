@@ -4,7 +4,7 @@ Created on Sat Feb 29 19:27:50 2020
 
 @author: kasy
 """
-
+import argparse
 from keras.layers import *
 
 from bert4keras.backend import keras, set_gelu
@@ -18,34 +18,14 @@ import numpy as np
 
 #set_gelu('tanh')  # 切换gelu版本
 
-epoch_num = 15
-prefix = 'Google'
-maxlen = 128
+
 
 def load_data(filename):
     D = pd.read_csv(filename).values.tolist()
     return D
 
-import re
 
-ch_reg = "[\u002c\u3002\uff1b\uff0c\uff1a\u201c\u201d\uff08\uff09\u3001\u300a\u300b]"
-
-f = lambda x:re.sub(ch_reg, '，', x).strip("?").strip('？').replace(ch_reg, '，').strip('，')
-
-#def load_data(filename):
-#    D = pd.read_csv(filename)
-#    D['query1'] = D['query1'].map(f)
-#    D['query2'] = D['query2'].map(f)
-#    D = D.values.tolist()
-#    return D
-
-
-test_data = load_data('./data/dev_20200228.csv')
-
-#test_data = load_data('/tcdata/test.csv')
-
-
-batch_size = 1
+# test_data = load_data('./data/dev_20200228.csv')
 
 
 class test_data_generator(DataGenerator):
@@ -88,107 +68,98 @@ def eval_submission(data):
     pred_list = np.asarray(pred_list)
     return idx_list, pred_list
 
-test_generator = test_data_generator(test_data, 1)
-print('{0}_best_model.weights'.format(prefix))
 
-# #===================load first model=============
-# # HuaWei NeTha
-# config_path = 'NEZHA/bert_config.json'
-# checkpoint_path = 'NEZHA/model.ckpt-900000'
-# dict_path = 'NEZHA/vocab.txt'          
+def make_model(config_path, checkpoint_path, prefix):
 
-# tokenizer = Tokenizer(dict_path, do_lower_case=True)     
-# ##加载预训练模型:: 华为
-# bert = build_bert_model(
-#     config_path=config_path,
-#     checkpoint_path=checkpoint_path,
-#     model='nezha',
-#     with_pool=True,
-#     return_keras_model=False,
-# )    
+    if prefix == 'BERT':
+        bert = build_bert_model(
+            config_path=config_path,
+            checkpoint_path=checkpoint_path,
+            with_pool=True,
+            return_keras_model=False,
+        )
+    if prefix == 'NEZHA':
+        bert = build_bert_model(
+            config_path=config_path,
+            checkpoint_path=checkpoint_path,
+            model='nezha',
+            with_pool=True,
+            return_keras_model=False,
+        )   
+                          
 
-# output = Dropout(rate=0.1)(bert.model.output)
-# output = Dense(units=2,
-#                activation='softmax',
-#                kernel_initializer=bert.initializer)(output)
+    output = Dropout(rate=0.01)(bert.model.output)
+    output = Dense(units=2,
+                activation='softmax',
+                kernel_initializer=bert.initializer)(output)
 
-# model = keras.models.Model(bert.model.input, output)
-# model.summary()
-# #===================load first model=====================
-# prefix = 'NEZHA'
-# model.load_weights('{0}_best_1_model.weights'.format(prefix))
-# idxs1, preds1 = eval_submission(test_generator)
+    model = keras.models.Model(bert.model.input, output)
+    model.summary()
 
-# print('Beging first')
-# model.load_weights('{0}_best_2_model.weights'.format(prefix))
-# idxs1, preds2 = eval_submission(test_generator)
+    return model
 
 
-
-#==================load second model====================
-prefix = 'Google'
-
-config_path = 'BERT_wwm/bert_config.json'
-checkpoint_path = 'BERT_wwm/bert_model.ckpt'
-dict_path = 'BERT_wwm/vocab.txt'          
-
-tokenizer = Tokenizer(dict_path, do_lower_case=True)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--prefix', type=str, default='NEZHA')
+    args = parser.parse_args()
+    print(args)
 
 
-bert = build_bert_model(
-    config_path=config_path,
-    checkpoint_path=checkpoint_path,
-    with_pool=True,
-    return_keras_model=False,
-)    
+    test_data = load_data('./data/dev_20200228.csv')
 
-output = Dropout(rate=0.01)(bert.model.output)
-output = Dense(units=2,
-               activation='softmax',
-               kernel_initializer=bert.initializer)(output)
+    test_generator = test_data_generator(test_data, 1)
+    print('{0}_best_model.weights'.format(prefix))
 
-model = keras.models.Model(bert.model.input, output)
-model.summary()
-#==============load second checkpoints=====================
+    prefix = args.prefix
 
-model.load_weights('{0}_best_1_model.weights'.format(prefix))
-idxs1, preds3 = eval_submission(test_generator)
+    config_path = args.prefix + '/bert_config.json'
+    checkpoint_path = args.prefix + '/bert_model.ckpt'
 
-print('Beging first')
-model.load_weights('{0}_best_2_model.weights'.format(prefix))
-idxs1, preds4 = eval_submission(test_generator)
+    dict_path = args.prefix + '/vocab.txt'    
 
-print('Begin three')
-model.load_weights('{0}_best_3_model.weights'.format(prefix))
-idxs1, preds5 = eval_submission(test_generator)
+    tokenizer = Tokenizer(dict_path, do_lower_case=True)
 
-model.load_weights('{0}_best_4_model.weights'.format(prefix))
-idxs1, preds6 = eval_submission(test_generator)
+    model = make_model(config_path, checkpoint_path, args.prefix)
 
-print('Beging last')
-model.load_weights('{0}_best_5_model.weights'.format(prefix))
-idxs1, preds7 = eval_submission(test_generator)
+    #==============load checkpoints=====================
 
+    model.load_weights('{0}_best_1_model.weights'.format(args.prefix))
+    idxs1, preds3 = eval_submission(test_generator)
 
-preds = preds3 + preds4 + preds5 + preds6 + preds7
-preds_num = len(preds)
+    print('Beging first')
+    model.load_weights('{0}_best_2_model.weights'.format(args.prefix))
+    idxs1, preds4 = eval_submission(test_generator)
 
-preds_final = []
-for i in range(preds_num):
-    if preds[i]>2.5:
-        preds_final.append(1)
-    else:
-        preds_final.append(0)
-#preds[preds>2.5] = 1
-#preds[preds<=2.5] = 0
+    print('Begin three')
+    model.load_weights('{0}_best_3_model.weights'.format(args.prefix))
+    idxs1, preds5 = eval_submission(test_generator)
+
+    model.load_weights('{0}_best_4_model.weights'.format(args.prefix))
+    idxs1, preds6 = eval_submission(test_generator)
+
+    print('Beging last')
+    model.load_weights('{0}_best_5_model.weights'.format(args.prefix))
+    idxs1, preds7 = eval_submission(test_generator)
 
 
-print('Qoo:5.3')
+    preds = preds3 + preds4 + preds5 + preds6 + preds7
+    preds_num = len(preds)
 
-submission = pd.DataFrame({'id': idxs1,
-                         'label': preds_final})
+    preds_final = []
+    for i in range(preds_num):
+        if preds[i]>2.5:
+            preds_final.append(1)
+        else:
+            preds_final.append(0)
+    #preds[preds>2.5] = 1
+    #preds[preds<=2.5] = 0
 
-submission_file = 'result.csv'
-submission.to_csv(submission_file, index=False)
 
+    print('Over')
 
+    submission = pd.DataFrame({'id': idxs1,
+                            'label': preds_final})
+
+    submission_file = 'result.csv'
+    submission.to_csv(submission_file, index=False)
