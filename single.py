@@ -76,9 +76,9 @@ test_generator = test_data_generator(test_data, 1)
 print('{0}_best_model.weights'.format(prefix))
 
 
-config_path = prefix + '/bert_config.json'
-checkpoint_path = prefix + '/bert_model.ckpt'
-dict_path = prefix + '/vocab.txt'          
+config_path = 'HUAWEI/bert_config.json'
+checkpoint_path = 'HUAWEI/bert_model.ckpt'
+dict_path = 'HUAWEI/vocab.txt'          
 
 tokenizer = Tokenizer(dict_path, do_lower_case=True)
 
