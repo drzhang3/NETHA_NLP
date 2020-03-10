@@ -104,14 +104,23 @@ def adversarial_training(model, embedding_name, epsilon=1):
     model.train_function = train_function  # 覆盖原训练函数
 
 
-def make_model(config_path, checkpoint_path):
+def make_model(config_path, checkpoint_path, prefix):
 
-    bert = build_bert_model(
-        config_path=config_path,
-        checkpoint_path=checkpoint_path,
-        with_pool=True,
-        return_keras_model=False,
-    )
+    if prefix = 'Google':
+        bert = build_bert_model(
+            config_path=config_path,
+            checkpoint_path=checkpoint_path,
+            with_pool=True,
+            return_keras_model=False,
+        )
+    if prefix = 'HUAWEI':
+        bert = build_bert_model(
+            config_path=config_path,
+            checkpoint_path=checkpoint_path,
+            model='nezha',
+            with_pool=True,
+            return_keras_model=False,
+        )   
                           
 
     output = Dropout(rate=0.01)(bert.model.output)
@@ -211,6 +220,6 @@ if __name__ == "__main__":
         train_data = [all_data[i] for i in train_index]
         test_data= [all_data[j] for j in test_index]
         print('*****************Turn {}**********************'.format(turn))
-        model = make_model(config_path, checkpoint_path)
+        model = make_model(config_path, checkpoint_path, args.base)
         train(model, train_data, test_data, args.bs, turn)
         turn = turn + 1
