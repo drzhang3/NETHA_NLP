@@ -36,4 +36,6 @@ NEZHA_best_5_model.weights
 HUAWEI_record_acc.txt
 Google_record_acc.txt
 roberta-large_record_acc.txt
+NEZHA_record_acc.txt
+BERT_record_acc.txt
 result.csv
