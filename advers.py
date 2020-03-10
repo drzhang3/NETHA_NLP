@@ -31,8 +31,7 @@ def load_data(filename):
     return D
 
 
-dict_path = 'BERT_wwm/vocab.txt'
-tokenizer = Tokenizer(dict_path, do_lower_case=True)
+
 
 
 class data_generator(DataGenerator):
@@ -194,8 +193,8 @@ if __name__ == "__main__":
         description='adver',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--prefix', type=str, default='BERT')
-    parser.add_argument('--bs', type=int, default=128)
-    parser.add_argument('--lr', type=float, default=2.5e-5)
+    parser.add_argument('--bs', type=int, default=64)
+    parser.add_argument('--lr', type=float, default=1e-5)
     parser.add_argument('--epochs', type=int, default=15)
     parser.add_argument('--maxlen', type=int, default=128)
     parser.add_argument('--alpha', type=float, default=0.5)
@@ -205,6 +204,8 @@ if __name__ == "__main__":
     config_path = args.prefix+'/bert_config.json'
     checkpoint_path = args.prefix+'/bert_model.ckpt'
 
+    dict_path = args.predict + '/vocab.txt'
+    tokenizer = Tokenizer(dict_path, do_lower_case=True)
     # model = make_model(config_path, checkpoint_path)
     
 
