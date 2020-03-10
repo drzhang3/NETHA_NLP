@@ -204,7 +204,7 @@ if __name__ == "__main__":
     config_path = args.prefix+'/bert_config.json'
     checkpoint_path = args.prefix+'/bert_model.ckpt'
 
-    dict_path = args.predict + '/vocab.txt'
+    dict_path = args.prefix + '/vocab.txt'
     tokenizer = Tokenizer(dict_path, do_lower_case=True)
     # model = make_model(config_path, checkpoint_path)
     
