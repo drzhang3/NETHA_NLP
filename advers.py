@@ -106,14 +106,14 @@ def adversarial_training(model, embedding_name, epsilon=1):
 
 def make_model(config_path, checkpoint_path, prefix):
 
-    if prefix = 'BERT':
+    if prefix == 'BERT':
         bert = build_bert_model(
             config_path=config_path,
             checkpoint_path=checkpoint_path,
             with_pool=True,
             return_keras_model=False,
         )
-    if prefix = 'NEZHA':
+    if prefix == 'NEZHA':
         bert = build_bert_model(
             config_path=config_path,
             checkpoint_path=checkpoint_path,

@@ -19,7 +19,7 @@ import numpy as np
 #set_gelu('tanh')  # 切换gelu版本
 
 epoch_num = 15
-prefix = 'HUAWEI'
+prefix = 'NEZHA'
 maxlen = 128
 
 def load_data(filename):
@@ -115,7 +115,7 @@ output = Dense(units=2,
 model = keras.models.Model(bert.model.input, output)
 model.summary()
 #===================load first model=====================
-prefix = 'HUAWEI'
+prefix = 'NEZHA'
 model.load_weights('{0}_best_1_model.weights'.format(prefix))
 idxs1, preds1 = eval_submission(test_generator)
 
