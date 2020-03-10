@@ -31,9 +31,6 @@ def load_data(filename):
     return D
 
 
-
-
-
 class data_generator(DataGenerator):
     """数据生成器
     """
@@ -201,8 +198,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print(args)
 
-    config_path = args.prefix+'/bert_config.json'
-    checkpoint_path = args.prefix+'/bert_model.ckpt'
+    config_path = args.prefix + '/bert_config.json'
+    checkpoint_path = args.prefix + '/bert_model.ckpt'
 
     dict_path = args.prefix + '/vocab.txt'
     tokenizer = Tokenizer(dict_path, do_lower_case=True)

@@ -11,6 +11,13 @@ Google_best_3_model.weights
 Google_best_4_model.weights
 Google_best_5_model.weights
 
+BERT_best_0_model.weights
+BERT_best_1_model.weights
+BERT_best_2_model.weights
+BERT_best_3_model.weights
+BERT_best_4_model.weights
+BERT_best_5_model.weights
+
 roberta-large_best_0_model.weights
 roberta-large_best_1_model.weights
 roberta-large_best_2_model.weights
@@ -18,12 +25,12 @@ roberta-large_best_3_model.weights
 roberta-large_best_4_model.weights
 roberta-large_best_5_model.weights
 
-HUAWEI_best_0_model.weights
-HUAWEI_best_1_model.weights
-HUAWEI_best_2_model.weights
-HUAWEI_best_3_model.weights
-HUAWEI_best_4_model.weights
-HUAWEI_best_5_model.weights
+NEZHA_best_0_model.weights
+NEZHA_best_1_model.weights
+NEZHA_best_2_model.weights
+NEZHA_best_3_model.weights
+NEZHA_best_4_model.weights
+NEZHA_best_5_model.weights
 
 
 HUAWEI_record_acc.txt
