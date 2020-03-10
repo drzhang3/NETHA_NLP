@@ -95,7 +95,7 @@ bert = build_bert_model(
 output = Dropout(rate=0.01)(bert.model.output)
 output = Dense(units=2,
                activation='softmax',
-               kernel_initializer=bert.initializer)(bert.model.output)
+               kernel_initializer=bert.initializer)(output)
 
 model = keras.models.Model(bert.model.input, output)
 model.summary()
