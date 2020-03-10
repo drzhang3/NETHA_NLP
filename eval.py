@@ -41,7 +41,7 @@ class test_data_generator(DataGenerator):
             #print(self.data[i])
             idx_i,_, text1, text2, label = self.data[i]
 #             print(text1, text2, label)
-            token_ids, segment_ids = tokenizer.encode(text1, text2, max_length=maxlen)
+            token_ids, segment_ids = tokenizer.encode(text1, text2, max_length=args.maxlen)
             batch_token_ids.append(token_ids)
             batch_segment_ids.append(segment_ids)
             #batch_labels.append([label])
@@ -102,6 +102,7 @@ def make_model(config_path, checkpoint_path, prefix):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--prefix', type=str, default='NEZHA')
+    parser.add_argument('--maxlen', type=int, default=128)
     args = parser.parse_args()
     print(args)
 
