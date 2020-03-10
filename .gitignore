@@ -1,6 +1,8 @@
 BERT_wwm/
 HUAWEI/
 roberta-large/
+BERT/
+NEZHA/
 
 Google_best_0_model.weights
 Google_best_1_model.weights

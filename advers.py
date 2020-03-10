@@ -106,14 +106,14 @@ def adversarial_training(model, embedding_name, epsilon=1):
 
 def make_model(config_path, checkpoint_path, prefix):
 
-    if prefix = 'Google':
+    if prefix = 'BERT':
         bert = build_bert_model(
             config_path=config_path,
             checkpoint_path=checkpoint_path,
             with_pool=True,
             return_keras_model=False,
         )
-    if prefix = 'HUAWEI':
+    if prefix = 'NEZHA':
         bert = build_bert_model(
             config_path=config_path,
             checkpoint_path=checkpoint_path,
@@ -193,18 +193,17 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='adver',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--prefix', type=str, default='Google')
+    parser.add_argument('--prefix', type=str, default='BERT')
     parser.add_argument('--bs', type=int, default=128)
     parser.add_argument('--lr', type=float, default=2.5e-5)
     parser.add_argument('--epochs', type=int, default=15)
     parser.add_argument('--maxlen', type=int, default=128)
     parser.add_argument('--alpha', type=float, default=0.5)
-    parser.add_argument('--base', type=str, default='BERT_wwm')
     args = parser.parse_args()
     print(args)
 
-    config_path = args.base+'/bert_config.json'
-    checkpoint_path = args.base+'/bert_model.ckpt'
+    config_path = args.prefix+'/bert_config.json'
+    checkpoint_path = args.prefix+'/bert_model.ckpt'
 
     # model = make_model(config_path, checkpoint_path)
     
@@ -220,6 +219,6 @@ if __name__ == "__main__":
         train_data = [all_data[i] for i in train_index]
         test_data= [all_data[j] for j in test_index]
         print('*****************Turn {}**********************'.format(turn))
-        model = make_model(config_path, checkpoint_path, args.base)
+        model = make_model(config_path, checkpoint_path, args.prefix)
         train(model, train_data, test_data, args.bs, turn)
         turn = turn + 1
