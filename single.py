@@ -94,7 +94,7 @@ print('{0}_best_model.weights'.format(prefix))
 #===================load first model=============
 # HuaWei NeTha
 config_path = 'NEZHA/bert_config.json'
-checkpoint_path = 'NEZHA/model.ckpt-900000'
+checkpoint_path = 'NEZHA/bert_model.ckpt'
 dict_path = 'NEZHA/vocab.txt'          
 
 tokenizer = Tokenizer(dict_path, do_lower_case=True)     
