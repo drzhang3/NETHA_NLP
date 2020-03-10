@@ -87,6 +87,7 @@ tokenizer = Tokenizer(dict_path, do_lower_case=True)
 bert = build_bert_model(
     config_path=config_path,
     checkpoint_path=checkpoint_path,
+    model='nezha',
     with_pool=True,
     return_keras_model=False,
 )    
