@@ -189,7 +189,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='adver',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--prefix', type=str, default='BERT')
+    parser.add_argument('--prefix', type=str, default='NEZHA')
     parser.add_argument('--bs', type=int, default=64)
     parser.add_argument('--lr', type=float, default=1e-5)
     parser.add_argument('--epochs', type=int, default=15)
