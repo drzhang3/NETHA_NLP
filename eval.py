@@ -71,7 +71,7 @@ def eval_submission(data):
 
 def make_model(config_path, checkpoint_path, prefix):
 
-    if prefix == 'BERT':
+    if prefix == 'BERT' or prefix == 'roberta-large':
         bert = build_bert_model(
             config_path=config_path,
             checkpoint_path=checkpoint_path,

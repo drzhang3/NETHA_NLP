@@ -102,7 +102,7 @@ def adversarial_training(model, embedding_name, epsilon=1):
 
 def make_model(config_path, checkpoint_path, prefix):
 
-    if prefix == 'BERT':
+    if prefix == 'BERT' or prefix == 'roberta-large':
         bert = build_bert_model(
             config_path=config_path,
             checkpoint_path=checkpoint_path,
